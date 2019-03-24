@@ -39,6 +39,7 @@ Below is presented the overview of the most obvious drawbacks for some of these 
      *[TURN_ON, GET_TEMP, CHECK_SAFETY, TURN_REACTOR, ...]* could easily become 
      *[TURN_ON, TURN_REACTOR, GET_TEMP, CHECK_SAFETY, ...]*.
      Then the reactor turns before security checks and you got a disaster. Easy
+  #. has relatively big memory footprint (``+9.5 KB`` flash / ``+1.3 KB`` RAM according to `this report`_)
   #. message format. There is no message error checking facilities provided. Instead, it relies on UDP/HTTP and the
      corresponding underlying protocols. We know that UDP runs on top of IP and IP runs on top of whatever.
      For UDP running on top of IPv4 the 16-bit CRC checksum is completely optional
@@ -80,11 +81,17 @@ Below is presented the overview of the most obvious drawbacks for some of these 
   #. has *(almost)* nothing to do with NAT. The client can receive messages as long as the connection is being established.
      If the connection was dropped, the client should reconnect to keep receiving the data.
 * `XMPP <https://en.wikipedia.org/wiki/XMPP>`_ (Extensible Messaging and Presence Protocol) ...
-* `LWM2M <https://en.wikipedia.org/wiki/OMA_LWM2M>`_ (LightWeight Machine-to-Machine) ...
+* `LWM2M <https://en.wikipedia.org/wiki/OMA_LWM2M>`_ (LightWeight Machine-to-Machine)
+
+  #. is typically implemented on top of CoAP transport, in this case inheriting all of it drawbacks
+  #. has overcomplicated specification. This means that the vast majority of libs will substantially contibute to 
+     the resulting application size (about ``+8.6 KB`` flash / ``+0.8 KB`` RAM according to `this report`_)
 * `DDS <https://en.wikipedia.org/wiki/Data_Distribution_Service>`_ (Data Distribution Service) ...
 * `AMQP <https://en.wikipedia.org/wiki/Advanced_Message_Queuing_Protocol>`_ (Advanced Message Queuing Protocol) ...
 
-Conclusion:  
+.. _this report: https://theinternetofthings.report/Resources/Whitepapers/e4d4fb3c-b9cd-4c22-b490-3c6a3bd17d30_10.pdf
+
+Conclusion:
   Any of the previously described protocols could be used as underlying transport for Xproto (if and when needed),
   but none of them could replace it.
 
@@ -101,4 +108,24 @@ Transport
 
 Packet format
 *******************
-...
+Inside a session packets have the following format:
+
++------------------------+-----------------+
+| |       PAYLOAD        | CHECKSUM **\*** |
+| | (encrypted protobuf) |                 |
++------------------------+-----------------+
+\* |RI| uses 1-byte CRC8-Maxim checksum. Other checksums are possible via |ext|. 
+   It is possible to have no checksum in |SP| (via |ext|) given that either:
+   a. error checks are performed by the underlying transport (with exception to TCP)
+   b. error check is performed at the end of session, and only if the whole session dropping is allowed
+
+.. |RI| replace:: Xproto Reference Implementation
+.. |SP| replace:: Session Packet
+.. |ext| replace:: `Xproto Extensions <#xproto-optionals-and-extensions>`_
+
++------------------------+------------+----------+----------+
+| Header row, column 1   | Header 2   | Header 3 | Header 4 |
+| (header rows optional) |            |          |          |
++------------------------+------------+----------+----------+
+
+gdfgs
