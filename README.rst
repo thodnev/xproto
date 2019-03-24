@@ -13,15 +13,55 @@ Xproto is designed to be:
    efficiency.
 #. IoT-ready — it should fit the constained runtimes such as MCUs, in terms of: small code footprint; small RAM usage;
    low computational power (though nowadays there is no single strict definition what IoT means)
-#. Secure — ...
+#. Secure — we use military grade encryption algorightms on per-session basis. Each following session key
+   is derived from **all** the previous sessions. This means that even if the attacker somehow manages to find the current 
+   session key (using  impossible alien supercomputers), it will be outdated in a minutes, as soon as the next session 
+   starts.
 #. NAT-safe — most of times a device node is located behind the NAT, and could only initiate the outgoing
    connections, not accept the incoming ones. ..longpolling, beaconing.. 
-   (stuff such as firewalls, dynamic IPs is also adressed using this approach)
-
+   (stuff such as firewalls, dynamic IPs is also adressed using this approach).
+#. Transport-agnostic — any underlying transport could be used with Xproto. TCP, UDP, TLS, or even HTTP (if you like 
+   *die großen* headers).
+#. RPC-ready — Xproto supports the `Remote Procedure Calls <https://en.wikipedia.org/wiki/Remote_procedure_call>`_,
+   which allows for seamless device-server integration based on clean concise native APIs
+   
 | There are plenty of IoT-ready protocols, however they do not fit the specifig goals the Xproto is addressing.
 Below is presented the overview of the most obvious drawbacks for some of these protocols:
 
-* `CoAP <https://en.wikipedia.org/wiki/Constrained_Application_Protocol>`_ (Constrained Application Protocol) ...
+* `CoAP <https://en.wikipedia.org/wiki/Constrained_Application_Protocol>`_ (Constrained Application Protocol)
+
+  #. is asynchronous by design. It means if we need the messages to arrive in some order we should implement it ourselves.
+     This makes implementing a control sequence a fairly challenging task.
+     *[TURN_ON, GET_TEMP, CHECK_SAFETY, TURN_REACTOR, ...]* could easily become 
+     *[TURN_ON, TURN_REACTOR, GET_TEMP, CHECK_SAFETY, ...]*.
+     Then the reactor turns before security checks and you got a disaster. Easy
+  #. message format. There are no message error checking facilities provided. Instead it relies on UDP/HTTP and the
+     corresponding underlying protocols. We know that UDP runs ontop of IP and IP runs ontop of whatever.
+     For UDP running ontop of IPv4 the 16-bit CRC checksum is completely optional
+     (though usually is used). And IPv4 provides only a *Header Checksum*. This means that in some (untypical, but still
+     possible) configurations it could happen that UDP packets are not verified at all. Reliability?
+     
+     The minimum CoAP header size is 5 bytes when payload is used. And numerous CoAP packets could not be placed into 
+     a single UDP packet. This means that we eventually must carry additional 8 bytes.
+     It means high efficiency for long packets and low efficiency for small. 
+     When 4 bytes of data is transmitted, the efficiency would be ``4 / (4 + 5 + 8) = 24 %``.
+     And the maximum CoAP payload size is limited to UDP packet size, which generally is ``~64 KB`` — probably too much
+     to prove the need in 1 CoAP = 1 UDP packet usage.
+  #. is tightly bound to UDP or HTTP transport. HTTP could be used as CoAP mapping which means that CoAP messages are
+     represented with corresponding HTTP headers and methods. That is a cool feature, but we pretend 
+     not to use HTTP as it is being too traffic-heavy.
+     
+     UDP means fast low-delay, but though unreliable transfers. It does not
+     guarantee that the message is being received at all. CoAP tries to deal with this by providing *acknowledgements* and
+     the *piggyback* mechanism, but still has nothing to do with out-of-order reception. And you can not simply replace UDP
+     with TCP as it will break the standard compatibility.
+  #. provides no security means by itself, instead relying on 
+     `DTLS <https://en.wikipedia.org/wiki/Datagram_Transport_Layer_Security>`_ underlying protocol or HTTP security
+     (when being mapped to HTTP). When DTLS is being used in conjunction, its security features are largely 
+     limited to three options: PSK (Pre-Shared Key), asymmetic RPK (Raw Public Key) and X.509 (Cerificate).
+     And we could not use HTTP security as it complicates the stack and enlargens the packet size
+  #. ... and many more ... Seriously, enough, that is not an academic comparison of protocols. Of all the alternatives,
+     CoAP is probably the best, but it still does not fulfill our needs because of its drawbacks.
 * `MQTT <https://en.wikipedia.org/wiki/MQTT>`_ (Message Queuing Telemetry Transport) requires a message broker...
   (such as `Mosquitto <https://mosquitto.org>`_) ...
 * `XMPP <https://en.wikipedia.org/wiki/XMPP>`_ (Extensible Messaging and Presence Protocol) ...
@@ -32,6 +72,10 @@ Below is presented the overview of the most obvious drawbacks for some of these 
 ********************
 Overview
 ********************
+Xproto optionals and extensions
+===============================
+
+
 Transport
 ********************
 ...
