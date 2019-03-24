@@ -121,11 +121,4 @@ Inside a session packets have the following format:
 
 .. |RI| replace:: Xproto Reference Implementation
 .. |SP| replace:: Session Packet
-.. |ext| replace:: `Xproto Extensions <#xproto-optionals-and-extensions>`_
-
-+------------------------+------------+----------+----------+
-| Header row, column 1   | Header 2   | Header 3 | Header 4 |
-| (header rows optional) |            |          |          |
-+------------------------+------------+----------+----------+
-
-gdfgs
+.. |ext| replace:: `Xproto Extensions <#xproto-optionals-and-extensions>`__
