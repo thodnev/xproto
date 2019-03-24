@@ -11,25 +11,25 @@ Xproto is designed to be:
    We use `protobuf <https://en.wikipedia.org/wiki/Protocol_Buffers>`_ for payload
    encapsulation, which is known for `near-perfect <https://developers.google.com/protocol-buffers/docs/encoding>`_
    efficiency.
-#. IoT-ready — it should fit the constained runtimes such as MCUs, in terms of: small code footprint; small RAM usage;
+#. IoT-ready — it should fit the constrained runtimes such as MCUs, in terms of small code footprint; small RAM usage;
    low computational power (though nowadays there is no single strict definition what IoT means)
-#. Secure — we use military grade encryption algorightms on per-session basis. Each following session key
+#. Secure — we use military-grade encryption algorithms on a per-session basis. Each following session key
    is derived from **all** the previous sessions. This means that even if the attacker somehow manages to find the current 
-   session key (using  impossible alien supercomputers), it will be outdated in a minutes, as soon as the next session 
+   session key (using  impossible alien supercomputers), it will be outdated in minutes, as soon as the next session 
    starts.
-#. _`NAT-safe` — most of times a device node is located behind the NAT, and could only initiate the outgoing
-   connections, not accept the incoming ones. It is possibe to deal with it using the longpolling mechanism,
+#. _`NAT-safe` — most of the times a device node is located behind the NAT, and could only initiate the outgoing
+   connections, not accept the incoming ones. It is possible to deal with it using the longpolling mechanism,
    similar to the one used with HTTP or in push notifications. The device node regularly sends small requests to 
-   server and gets a new data in response.
-   Stuff such as firewalls, dynamic IPs may also be adressed using the longpolling approach.
+   server and gets new data in response.
+   Stuff such as firewalls, dynamic IPs may also be addressed using the longpolling approach.
 #. Transport-agnostic — any underlying transport could be used with Xproto. TCP, UDP, TLS, or even HTTP (if you like 
    *die großen* headers).
 #. RPC-ready — Xproto supports the `Remote Procedure Calls <https://en.wikipedia.org/wiki/Remote_procedure_call>`_,
    which allows for seamless device-server integration based on clean concise native APIs. We have taken the best
-   approaches from `JSON-RPC <https://en.wikipedia.org/wiki/JSON-RPC>`_ and rethunk them to keep Xproto RPC 
+   approaches from `JSON-RPC <https://en.wikipedia.org/wiki/JSON-RPC>`_ and rethought them to keep Xproto RPC 
    as robust as possible.
    
-| There are plenty of IoT-ready protocols, however they do not fit the specifig goals the Xproto is addressing.
+| There are plenty of IoT-ready protocols, however, they do not fit the specific goals the Xproto is addressing.
 Below is presented the overview of the most obvious drawbacks for some of these protocols:
 
 * `CoAP <https://en.wikipedia.org/wiki/Constrained_Application_Protocol>`_ (Constrained Application Protocol)
@@ -39,13 +39,13 @@ Below is presented the overview of the most obvious drawbacks for some of these 
      *[TURN_ON, GET_TEMP, CHECK_SAFETY, TURN_REACTOR, ...]* could easily become 
      *[TURN_ON, TURN_REACTOR, GET_TEMP, CHECK_SAFETY, ...]*.
      Then the reactor turns before security checks and you got a disaster. Easy
-  #. message format. There are no message error checking facilities provided. Instead it relies on UDP/HTTP and the
-     corresponding underlying protocols. We know that UDP runs ontop of IP and IP runs ontop of whatever.
-     For UDP running ontop of IPv4 the 16-bit CRC checksum is completely optional
+  #. message format. There is no message error checking facilities provided. Instead, it relies on UDP/HTTP and the
+     corresponding underlying protocols. We know that UDP runs on top of IP and IP runs on top of whatever.
+     For UDP running on top of IPv4 the 16-bit CRC checksum is completely optional
      (though usually is used). And IPv4 provides only a *Header Checksum*. This means that in some (untypical, but still
      possible) configurations it could happen that UDP packets are not verified at all. Reliability?
      
-     The minimum CoAP header size is 5 bytes when payload is used. And numerous CoAP packets could not be placed into 
+     The minimum CoAP header size is 5 bytes when the payload is used. And numerous CoAP packets could not be placed into 
      a single UDP packet. This means that we eventually must carry additional 8 bytes.
      It means high efficiency for long packets and low efficiency for small. 
      When 4 bytes of data is transmitted, the efficiency would be ``4 / (4 + 5 + 8) = 24 %``.
@@ -62,8 +62,8 @@ Below is presented the overview of the most obvious drawbacks for some of these 
   #. provides no security means by itself, instead relying on 
      `DTLS <https://en.wikipedia.org/wiki/Datagram_Transport_Layer_Security>`_ underlying protocol or HTTP security
      (when being mapped to HTTP). When DTLS is being used in conjunction, its security features are largely 
-     limited to three options: PSK (Pre-Shared Key), asymmetic RPK (Raw Public Key) and X.509 (Certificate).
-     Also the usage of DTLS does not contribute to overall traffic efficiency.
+     limited to three options: PSK (Pre-Shared Key), asymmetric RPK (Raw Public Key) and X.509 (Certificate).
+     Also, the usage of DTLS does not contribute to overall traffic efficiency.
      And we could not use HTTP security as it complicates the stack and enlargens the packet size
   #. ... and many more ... Seriously, enough, that is not an academic comparison of protocols. Of all the alternatives,
      CoAP is probably the best, but it still does not fulfill our needs because of its drawbacks.
@@ -73,19 +73,19 @@ Below is presented the overview of the most obvious drawbacks for some of these 
      the system.
   #. does not provide message encryption facilities. If needed, the encryption should be managed by the application itself.
      The underlying transport is TCP or TLS.
-  #. has a publisher/subcriber architecture which largely limits the universal applicability. Having numerous clients
+  #. has a publisher/subscriber architecture which largely limits the universal applicability. Having numerous clients
      connected to single server maps to ``[N publishers + 1 subsriber]`` for device node sends plus 
      ``[N subscribers + 1 publisher]`` for the reception, either to one single topic, or to N topics for each device.
      This approach does not seem to prove helpful dealing with the `initial requirements <#nat-safe>`_.
-  #. has *(almost)* nothing to do with NAT. Client can receive messages as long as the connection is being established.
-     If the connection was dropped, client should reconnect to keep receiving the data.
+  #. has *(almost)* nothing to do with NAT. The client can receive messages as long as the connection is being established.
+     If the connection was dropped, the client should reconnect to keep receiving the data.
 * `XMPP <https://en.wikipedia.org/wiki/XMPP>`_ (Extensible Messaging and Presence Protocol) ...
 * `LWM2M <https://en.wikipedia.org/wiki/OMA_LWM2M>`_ (LightWeight Machine-to-Machine) ...
 * `DDS <https://en.wikipedia.org/wiki/Data_Distribution_Service>`_ (Data Distribution Service) ...
 * `AMQP <https://en.wikipedia.org/wiki/Advanced_Message_Queuing_Protocol>`_ (Advanced Message Queuing Protocol) ...
 
 Conclusion:  
-  Any of the previously described protocols could be used as underlying tranport for Xproto (if and when needed),
+  Any of the previously described protocols could be used as underlying transport for Xproto (if and when needed),
   but none of them could replace it.
 
 ********************
