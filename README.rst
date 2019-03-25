@@ -89,8 +89,6 @@ Below is presented the overview of the most obvious drawbacks for some of these 
 * `DDS <https://en.wikipedia.org/wiki/Data_Distribution_Service>`_ (Data Distribution Service) ...
 * `AMQP <https://en.wikipedia.org/wiki/Advanced_Message_Queuing_Protocol>`_ (Advanced Message Queuing Protocol) ...
 
-.. _this report: 
-
 Conclusion:
   Any of the previously described protocols could be used as underlying transport for Xproto (if and when needed),
   but none of them could replace it.
@@ -124,6 +122,8 @@ Inside a session packets have the following format:
 .. |ext| replace:: `Xproto Extensions <#xproto-optionals-and-extensions>`__
 
 
+References
+============
 .. [1] S. Rao et. al. `Implementing LWM2M inConstrained IoT Devices 
        <https://theinternetofthings.report/Resources/Whitepapers/e4d4fb3c-b9cd-4c22-b490-3c6a3bd17d30_10.pdf#page=6>`__,
        IEEE ICWiSe 2015, At Malaysia, DOI: 10.1109/ICWISE.2015.7380353
