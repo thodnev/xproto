@@ -39,7 +39,7 @@ Below is presented the overview of the most obvious drawbacks for some of these 
      *[TURN_ON, GET_TEMP, CHECK_SAFETY, TURN_REACTOR, ...]* could easily become 
      *[TURN_ON, TURN_REACTOR, GET_TEMP, CHECK_SAFETY, ...]*.
      Then the reactor turns before security checks and you got a disaster. Easy
-  #. has relatively big memory footprint (``+9.5 KB`` flash / ``+1.3 KB`` RAM according to `this report`_)
+  #. has relatively big memory footprint (``+9.5 KB`` flash / ``+1.3 KB`` RAM according to [1]_)
   #. message format. There is no message error checking facilities provided. Instead, it relies on UDP/HTTP and the
      corresponding underlying protocols. We know that UDP runs on top of IP and IP runs on top of whatever.
      For UDP running on top of IPv4 the 16-bit CRC checksum is completely optional
@@ -85,11 +85,11 @@ Below is presented the overview of the most obvious drawbacks for some of these 
 
   #. is typically implemented on top of CoAP transport, in this case inheriting all of it drawbacks
   #. has overcomplicated specification. This means that the vast majority of libs will substantially contibute to 
-     the resulting application size (about ``+8.6 KB`` flash / ``+0.8 KB`` RAM according to `this report`_)
+     the resulting application size (about ``+8.6 KB`` flash / ``+0.8 KB`` RAM according to [1]_)
 * `DDS <https://en.wikipedia.org/wiki/Data_Distribution_Service>`_ (Data Distribution Service) ...
 * `AMQP <https://en.wikipedia.org/wiki/Advanced_Message_Queuing_Protocol>`_ (Advanced Message Queuing Protocol) ...
 
-.. _this report: https://theinternetofthings.report/Resources/Whitepapers/e4d4fb3c-b9cd-4c22-b490-3c6a3bd17d30_10.pdf
+.. _this report: 
 
 Conclusion:
   Any of the previously described protocols could be used as underlying transport for Xproto (if and when needed),
@@ -114,10 +114,20 @@ Inside a session packets have the following format:
 | |       PAYLOAD        | CHECKSUM **\*** |
 | | (encrypted protobuf) |                 |
 +------------------------+-----------------+
-\* |RI| uses 1-byte CRC8-Maxim checksum. Other checksums are possible via |ext|. It is possible to have no checksum in |SP| (via |ext|) given that either:
+\* |RI| uses 1-byte CRC8-Koopman [2]_ (``0x14D x^8+x^6+x^3+x^2+1`` poly) checksum. Other checksums are possible via |ext|.
+| It is possible to have no checksum in |SP| (via |ext|) given that either:
     a. error checks are performed by the underlying transport (with exception to TCP)
     b. error check is performed at the end of session, and only if the whole session dropping is allowed
 
 .. |RI| replace:: Xproto Reference Implementation
 .. |SP| replace:: Session Packet
 .. |ext| replace:: `Xproto Extensions <#xproto-optionals-and-extensions>`__
+
+
+.. [1] S. Rao et. al. `Implementing LWM2M inConstrained IoT Devices 
+       <https://theinternetofthings.report/Resources/Whitepapers/e4d4fb3c-b9cd-4c22-b490-3c6a3bd17d30_10.pdf#page=6>`__,
+       IEEE ICWiSe 2015, At Malaysia, DOI: 10.1109/ICWISE.2015.7380353
+       
+.. [2] P. Koopman, T. Chakravarty. `Cyclic Redundancy Code (CRC) Polynomial Selection For Embedded Networks
+       <http://users.ece.cmu.edu/~koopman/roses/dsn04/koopman04_crc_poly_embedded.pdf>`__,
+       The International Conference on Dependable Systems and Networks, DSN-2004,  DOI: 10.1109/DSN.2004.1311885
