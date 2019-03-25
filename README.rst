@@ -112,7 +112,7 @@ Inside a session packets have the following format:
 | |       PAYLOAD        | CHECKSUM **\*** |
 | | (encrypted protobuf) |                 |
 +------------------------+-----------------+
-\* |RI| uses 1-byte CRC8-Koopman [2]_ (``0x14D x^8+x^6+x^3+x^2+1`` poly) checksum. Other checksums are possible via |ext|.
+\* |RI| uses 1-byte CRC8-Koopman [2]_ (``0x4D`` *x^8+x^6+x^3+x^2+1* poly) checksum. Other checksums are possible via |ext|.
 | It is possible to have no checksum in |SP| (via |ext|) given that either:
     a. error checks are performed by the underlying transport (with exception to TCP)
     b. error check is performed at the end of session, and only if the whole session dropping is allowed
